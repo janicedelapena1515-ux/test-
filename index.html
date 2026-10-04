@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Load Test Platform — Ready</title>
+    <!-- Loader.io Verification -->
+    <meta name="loader-verify" content="loaderio-b47751b850b68e5b351c8ddcce279cbc">
     <style>
+        /* ... ALL YOUR EXISTING STYLES HERE KEEP THEM ... */
         * {
             margin: 0;
             padding: 0;
@@ -218,20 +221,17 @@
     </div>
 
     <script>
-        // ===== STATE =====
         let reqCount = 0;
         let activeConn = 0;
         let loadLevel = 0;
         let intervals = [];
 
-        // ===== TIME =====
         function updateTime() {
             document.getElementById('server-time').textContent = new Date().toLocaleTimeString();
         }
         setInterval(updateTime, 1000);
         updateTime();
 
-        // ===== LOGGING =====
         function log(msg, type = 'info') {
             const box = document.getElementById('log-box');
             const colors = {
@@ -248,7 +248,6 @@
             if (box.children.length > 30) box.removeChild(box.lastChild);
         }
 
-        // ===== SIMULATED LOAD =====
         function setLoad(level) {
             stopAll();
             loadLevel = level;
@@ -280,7 +279,6 @@
                 bar.style.width = `${Math.min(100, (reqCount % 500))}%`;
                 bar.style.background = sysLoad > 70 ? '#ff4444' : sysLoad > 40 ? '#ffcc00' : '#00ff88';
 
-                // Simulated CPU work
                 let x = 0;
                 for(let i=0; i<intensity; i++) x += Math.sqrt(i) * Math.sin(i);
             }, interval);
