@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load Test Platform — Ready</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        :root {
+            --bg: #0a0a0f;
+            --panel: #12121f;
+            --border: #2a2a4a;
+            --green: #00ff88;
+            --yellow: #ffcc00;
+            --red: #ff4444;
+            --blue: #00aaff;
+            --purple: #8844ff;
+        }
+        body {
+            background: var(--bg);
+            color: #e0e0ff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            color: var(--green);
+            text-shadow: 0 0 10px rgba(0,255,136,0.4);
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .card h3 {
+            font-size: 0.9rem;
+            color: #8888aa;
+            margin-bottom: 10px;
+        }
+        .card .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .green { color: var(--green); }
+        .yellow { color: var(--yellow); }
+        .red { color: var(--red); }
+        .blue { color: var(--blue); }
+        .purple { color: var(--purple); }
+        .control-panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .control-panel h2 {
+            margin-bottom: 15px;
+            color: var(--blue);
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.2s;
+        }
+        .btn-green { background: var(--green); color: #000; }
+        .btn-yellow { background: var(--yellow); color: #000; }
+        .btn-red { background: var(--red); color: #fff; }
+        .btn:hover { transform: scale(1.05); }
+        .log-box {
+            background: #05050a;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+        .log-entry {
+            margin: 4px 0;
+            opacity: 0.8;
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #666688;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #1a1a2e;
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--green);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ LOAD TEST PLATFORM — READY</h1>
+            <p style="color:#888; margin-top:5px;">Educational Stress & Load Testing Demo</p>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="dot"></div>
+                <span>System Online</span>
+            </div>
+            <div>
+                <span id="server-time">--:--:--</span>
+            </div>
+            <div>
+                Load Level: <span id="load-level" class="green">IDLE</span>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>Requests Served</h3>
+                <div class="value green" id="req-count">0</div>
+                <div class="progress-bar"><div class="progress-fill" id="req-bar"></div></div>
+            </div>
+            <div class="card">
+                <h3>Response Time</h3>
+                <div class="value blue" id="resp-time">-- ms</div>
+            </div>
+            <div class="card">
+                <h3>Active Connections</h3>
+                <div class="value purple" id="active-conn">0</div>
+            </div>
+            <div class="card">
+                <h3>System Load</h3>
+                <div class="value" id="sys-load">0%</div>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <h2>🎯 Test Controls — Simulate Traffic</h2>
+            <p style="margin-bottom:15px; color:#888;">These are LOCAL SIMULATIONS — use Loader.io for REAL server load testing</p>
+            
+            <div>
+                <button class="btn btn-green" onclick="setLoad(0)">🟢 Idle</button>
+                <button class="btn btn-green" onclick="setLoad(1)">🟢 Light</button>
+                <button class="btn btn-yellow" onclick="setLoad(2)">🟡 Medium</button>
+                <button class="btn btn-yellow" onclick="setLoad(3)">🟠 Heavy</button>
+                <button class="btn btn-red" onclick="setLoad(4)">🔴 Max Stress</button>
+                <button class="btn btn-red" onclick="stopAll()">⏹ Stop</button>
+            </div>
+            
+            <div style="margin-top:20px;">
+                <h3>📋 Activity Log</h3>
+                <div class="log-box" id="log-box"></div>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            ⚠️ EDUCATIONAL USE ONLY — Do NOT use illegal DDoS tools or services<br>
+            ✅ Use: Loader.io · k6 · Locust · Apache Bench for legitimate load testing
+        </div>
+    </div>
+
+    <script>
+        // ===== STATE =====
+        let reqCount = 0;
+        let activeConn = 0;
+        let loadLevel = 0;
+        let intervals = [];
+
+        // ===== TIME =====
+        function updateTime() {
+            document.getElementById('server-time').textContent = new Date().toLocaleTimeString();
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // ===== LOGGING =====
+        function log(msg, type = 'info') {
+            const box = document.getElementById('log-box');
+            const colors = {
+                info: '#00aaff',
+                success: '#00ff88',
+                warning: '#ffcc00',
+                danger: '#ff4444'
+            };
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.style.color = colors[type];
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            box.insertBefore(entry, box.firstChild);
+            if (box.children.length > 30) box.removeChild(box.lastChild);
+        }
+
+        // ===== SIMULATED LOAD =====
+        function setLoad(level) {
+            stopAll();
+            loadLevel = level;
+            const labels = ['IDLE', 'LIGHT', 'MEDIUM', 'HEAVY', 'STRESS'];
+            const colors = ['green', 'green', 'yellow', 'orange', 'red'];
+            
+            document.getElementById('load-level').textContent = labels[level];
+            document.getElementById('load-level').className = colors[level];
+            log(`Load set to: ${labels[level]}`, level === 4 ? 'danger' : level >= 2 ? 'warning' : 'success');
+
+            if (level === 0) return;
+
+            const interval = 500 / level;
+            const intensity = level * 500;
+
+            const id = setInterval(() => {
+                reqCount++;
+                activeConn = Math.floor(Math.random() * (level * 8)) + level;
+                const respTime = Math.floor(10 + Math.random() * level * 15);
+                const sysLoad = Math.floor(5 + level * 20 + Math.random() * level * 10);
+
+                document.getElementById('req-count').textContent = reqCount.toLocaleString();
+                document.getElementById('resp-time').textContent = `${respTime} ms`;
+                document.getElementById('active-conn').textContent = activeConn;
+                document.getElementById('sys-load').textContent = `${sysLoad}%`;
+                document.getElementById('sys-load').className = sysLoad > 70 ? 'red' : sysLoad > 40 ? 'yellow' : 'green';
+                
+                const bar = document.getElementById('req-bar');
+                bar.style.width = `${Math.min(100, (reqCount % 500))}%`;
+                bar.style.background = sysLoad > 70 ? '#ff4444' : sysLoad > 40 ? '#ffcc00' : '#00ff88';
+
+                // Simulated CPU work
+                let x = 0;
+                for(let i=0; i<intensity; i++) x += Math.sqrt(i) * Math.sin(i);
+            }, interval);
+
+            intervals.push(id);
+        }
+
+        function stopAll() {
+            intervals.forEach(id => clearInterval(id));
+            intervals = [];
+            loadLevel = 0;
+            document.getElementById('load-level').textContent = 'IDLE';
+            document.getElementById('load-level').className = 'green';
+            activeConn = 0;
+            document.getElementById('active-conn').textContent = '0';
+            document.getElementById('sys-load').textContent = '0%';
+            document.getElementById('sys-load').className = 'green';
+            log('All load tests stopped', 'info');
+        }
+
+        log('✅ Test Platform Ready — Host & use Loader.io for real load testing', 'success');
+    </script>
+</body>
+</html>
